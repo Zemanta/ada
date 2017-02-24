@@ -1,5 +1,9 @@
 # Distribution / packaging
+env
 .Python
+__pycache__
+db.sqlite3
+.ropeproject/
 env/
 build/
 develop-eggs/

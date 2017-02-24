@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'base',
 ]
 
 MIDDLEWARE = [
@@ -121,8 +122,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # CUSTOM SETTINGS
-SLACK_BOT_TOKEN = Secret('kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAIkwgYYGCSqGSIb3DQEHBqB5MHcCAQAwcgYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwcAcBj9GZzmLkiTJACARCARW/vWWvvKHFUcf78oROzNDiK2sbyvW04ljQISNK3XGz5cXRkmlHTJMNObCKL/1wHj6gUWzyOW/SOrAp1ehVKVzq06o5ObA==').get()
-
-
-# this should be at the bottom
-# from localsettings import *
+BOT_ID = os.environ.get('BOT_ID')
+SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
