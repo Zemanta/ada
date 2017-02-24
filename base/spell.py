@@ -1,5 +1,6 @@
 import re
 from collections import Counter
+import os
 
 ## author @Peter Norvig
 def words(text): return re.findall(r'\w+', text.lower())
