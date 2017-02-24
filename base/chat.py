@@ -117,9 +117,11 @@ class Chatter(object):
 
 
         if input_intent == InputIntent.LiveCampaings:
-            print("a")
-            #live_campaigns = self.z1.get_running_campaigns(92)
-            #return "The following campaigns are currently live: \n" + '\n'.join('- ' + x for x in live_campaigns)
+            live_campaigns = self.z1.get_running_campaigns(92)
+            if live_campaigns:
+                return "The following campaigns are currently live: \n" + '\n'.join('- ' + x for x in live_campaigns)
+            else:
+                return "None of your campaigns are currently active!"
 
         elif input_intent == InputIntent.SpendAmount:
             ix = tokens.index("[")

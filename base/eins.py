@@ -8,6 +8,7 @@ URL_BASE = 'https://one.zemanta.com'
 URL_SIGNIN = '/signin'
 URL_ACCOUNTS_OVERVIEW = '/api/accounts/overview/'
 URL_ACCOUNT_CAMPAIGNS = '/api/accounts/{id}/breakdown/campaign/'
+URL_CAMPAIGN_STATS = '/rest/v1/campaigns/{id}/stats/'
 
 
 class ZemantaOne(object):
@@ -54,7 +55,7 @@ class ZemantaOne(object):
                 'params': {
                     'parents': [],
                     'start_date': start_date.isoformat(),
-                    'end_date': end_date.isoformat(),
+                    'end_d.ate': end_date.isoformat(),
                     'show_archived': False,
                     'level': 1,
                     'limit': 60,
@@ -64,3 +65,12 @@ class ZemantaOne(object):
             }
         )
         return r
+
+    def get_campaign_spend(self, campaign_id, start_date, end_date):
+        params = {
+            'from': start_date.isoformat(),
+            'to': end_date.isoformat(),
+        }
+        r = self.get(URL_BASE + URL_CAMPAIGN_STATS.format(id=campaign_id), params=params)
+        resp = r.json()
+        return resp['data']['totalCost']
