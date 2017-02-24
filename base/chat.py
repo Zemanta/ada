@@ -4,9 +4,8 @@ from unidecode import unidecode
 import enum
 import math
 from collections import Counter
-from spell import correction
 from wit import Wit
-from spell import correction
+from base.spell import correction
 import datetime
 
 logger = logging.getLogger(__name__)
@@ -22,7 +21,7 @@ class InputIntent(enum.Enum):
     StopCampaign = 5
 
 d = {("Which campaigns are running currently?", "Which campaigns are live?") : InputIntent.LiveCampaings,
-     ("What was the spend on [campaign1] yesterday/last month/last week?", "What was [campaign1]'s yesterday spend?") : InputIntent.SpendAmount,
+     ("What was the spend on campaign [13218]", "What was campaign [1233]'s spend?") : InputIntent.SpendAmount,
      ("Which ad has best performance in [campaign1]?", "Which is the best performing ad in [campaign1]") : InputIntent.AdPerformance,
      ("How is [campaign1] doing?") : InputIntent.CampaignPerformance,
      ("Which accounts are running currently?", "Which accounts are currently live?", "Which accounts are currently active?") : InputIntent.LiveAccounts,
@@ -122,6 +121,7 @@ class Chatter(object):
         tokens = [correction(token) for token in tokens if token not in stop_tokens]
         input_intent = self.parser.get_input_intent(tokens)
 
+        print("Selected intent: ", input_intent)
 
         if input_intent == InputIntent.LiveCampaings:
             live_campaigns = self.z1.get_running_campaigns(92)
