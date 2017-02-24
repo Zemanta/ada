@@ -169,7 +169,8 @@ class Chatter(object):
 
         elif input_intent == InputIntent.AdPerformance:
             if not campaign:
-                return "Please specify Campaign's ID"
+                CONTEXT['missingCampaign'] = {'datetime': datetime, 'intent': input_intent}
+                return "On which campaign?"
             r = self.z1.get_content_insights(campaign)
             title = r['best_performer_rows'][0]['summary']
             return "The best performing ad in campaign {campaign_id} is '{title}'".format(
