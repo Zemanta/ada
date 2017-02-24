@@ -36,7 +36,6 @@ class Command(BaseCommand):
             this parsing function returns None unless a message is
             directed at the Bot, based on its ID.
         """
-        print(slack_rtm_output)
         output_list = slack_rtm_output
         if output_list and len(output_list) > 0:
             for output in output_list:
@@ -54,5 +53,6 @@ class Command(BaseCommand):
         """
         print("responding to: ", input_text, channel)
         response = self.chat.respond(input_text)
+        print("with: ", response)
         self.slack_client.api_call("chat.postMessage", channel=channel,
                                    text=response, as_user=True)
