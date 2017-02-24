@@ -7,8 +7,6 @@ import numpy as np
 import math
 from collections import Counter
 
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -18,10 +16,6 @@ class InputIntent(enum.Enum):
 	AdPerformance = 2
 	CampaignPerformance = 3
 	LiveAccounts = 4
-
-
-
-
 
 d = {("Which campaigns are running currently?", "Which campaigns are live?") : InputIntent.LiveCampaings,
 	 ("What was the spend on [campaign1] yesterday/last month/last week?", "What was [campaign1]'s yesterday spend?") : InputIntent.SpendAmount,
@@ -66,25 +60,13 @@ class Parser(object):
 		return nltk.word_tokenize(normalized)
 
 
-	def get_similarity(self, input_tokens, questions):
-		tokenized_questions = map(self.tokenize_input, questions)
-		sim = 0
-		for q in tokenized_questions:
-			curr_sim = self.get_cosine(Counter(q), Counter(input_tokens))
-			sim = max(sim, curr_sim)
-		return sim
+	def get_similarity_for_intent(self, input_tokens, questions):
+		similarities = [self.get_cosine(Counter(self.tokenize_input(question)), Counter(input_tokens)) for question in questions]
+		return max(similarities)
 
 	def get_input_intent(self, input_tokens):
-		input_intent = None
-		sim = 0
-		for (questions, intent) in d.items():
-			curr_sim = self.get_similarity(input_tokens, questions)
-			if curr_sim > sim:
-				sim = curr_sim
-				input_intent = intent
-		return input_intent
-
-
+		intents_by_sim = [(intent, self.get_similarity_for_intent(input_tokens, questions)) for (questions, intent) in d.items()]
+		return max(intents_by_sim, key=lambda x:x[1])[0]
 
 
 class Chatter(object):
@@ -98,7 +80,7 @@ class Chatter(object):
 		tokens = [token for token in tokens if token not in stop_tokens]
 		input_intent = self.parser.get_input_intent(tokens)
 
-
+		print(input_intent)
 		if input_intent == InputIntent.LiveCampaings:
 			print("Live Campaings")
 
@@ -112,18 +94,3 @@ class Chatter(object):
 		elif input_intent == InputIntent.AdPerformance:
 			ix = tokens.index("[")
 			campaign = tokens[ix+1]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Chatter().respond("Whichh campaigns aree elive?")
