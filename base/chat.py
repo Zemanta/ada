@@ -6,7 +6,8 @@ import math
 from collections import Counter
 from spell import correction
 from wit import Wit
-from base.spell import correction
+from spell import correction
+import datetime
 
 logger = logging.getLogger(__name__)
 token="K3HP47EPDBH3OULNFOP2RDQNMCQFCRXR"
@@ -81,8 +82,20 @@ class Parser(object):
         resp = self.client.message(message)
         try:
             datetimes = resp['entities']['datetime']
-            for datetime in datetimes:
-                return datetime['value']
+            for date in datetimes:
+                datetime_from = datetime.datetime.strptime(date['value'][:-6], "%Y-%m-%dT%H:%M:%S.%f")
+                grain = date['grain']
+                datetime_to = None
+                if grain == "day":
+                    datetime_to = datetime_from + datetime.timedelta(days=1)
+                elif grain == "week":
+                    datetime_to = datetime_from + datetime.timedelta(weeks=1)
+                elif grain == "month":
+                    datetime_to = datetime_from + datetime.timedelta(month=1)
+                elif grain == "year":
+                    datetime_to = datetime_from + datetime.tiemdelta(year=1)
+
+                return (datetime_from, datetime_to)
         except KeyError:
             return None
 
@@ -91,9 +104,8 @@ class Parser(object):
 
 class Chatter(object):
 
-    def __init__(self, z1):
+    def __init__(self):
         self.parser = Parser()
-        self.z1 = z1
 
 
     def respond(self, text):
@@ -101,10 +113,13 @@ class Chatter(object):
         tokens = [correction(token) for token in tokens if token not in stop_tokens]
         input_intent = self.parser.get_input_intent(tokens)
 
+        print(self.parser.get_datetime(text))
+
 
         if input_intent == InputIntent.LiveCampaings:
-            live_campaigns = self.z1.get_running_campaigns(92)
-            return "The following campaigns are currently live: \n" + '\n'.join('- ' + x for x in live_campaigns)
+            print("a")
+            #live_campaigns = self.z1.get_running_campaigns(92)
+            #return "The following campaigns are currently live: \n" + '\n'.join('- ' + x for x in live_campaigns)
 
         elif input_intent == InputIntent.SpendAmount:
             ix = tokens.index("[")
@@ -113,3 +128,6 @@ class Chatter(object):
         elif input_intent == InputIntent.AdPerformance:
             ix = tokens.index("[")
             campaign = tokens[ix+1]
+
+
+Chatter().respond("Show me campaings friday")
