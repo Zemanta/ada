@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from secretcrypt import Secret
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'base',
 ]
 
 MIDDLEWARE = [
@@ -118,3 +120,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# CUSTOM SETTINGS
+BOT_ID = os.environ.get('BOT_ID')
+SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
+Z1_USERNAME = os.environ.get('Z1_USERNAME')
+Z1_PASSWORD = os.environ.get('Z1_PASSWORD')
