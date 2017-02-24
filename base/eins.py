@@ -74,3 +74,13 @@ class ZemantaOne(object):
         r = self.get(URL_BASE + URL_CAMPAIGN_STATS.format(id=campaign_id), params=params)
         resp = r.json()
         return resp['data']['totalCost']
+
+    def get_content_insights(self, campaign_id):
+        end_date = datetime.date.today()
+        start_date = end_date - datetime.timedelta(days=30)
+        r = self.get(URL_BASE + '/api/campaigns/212/content-insights/', params={
+            'start_date': start_date,
+            'end_date': end_date,
+        })
+        resp = r.json()
+        return resp['data']

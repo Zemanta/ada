@@ -140,5 +140,13 @@ class Chatter(object):
                 print(campaign)
 
         elif input_intent == InputIntent.AdPerformance:
-            print("c")
-
+            campaign_id = None
+            for token in tokens:
+                try:
+                    campaign_id = int(token)
+                    break
+                except:
+                    pass
+            if not campaign_id:
+                return "Please specify Campaign's ID"
+            return "Campaign ID: %s" % campaign_id
