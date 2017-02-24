@@ -99,21 +99,28 @@ class Parser(object):
         except KeyError:
             return None
 
+    def get_campaign(self, tokens):
+        try:
+            ix = tokens.index("[")
+            return tokens[ix+1]
+        except IndexError:
+            return None
+
 
 
 
 class Chatter(object):
 
-    def __init__(self):
+    def __init__(self, z1):
         self.parser = Parser()
+        self.z1 = z1
 
 
     def respond(self, text):
         tokens = self.parser.tokenize_input(text)
+        campaign = self.parser.get_campaign(tokens)
         tokens = [correction(token) for token in tokens if token not in stop_tokens]
         input_intent = self.parser.get_input_intent(tokens)
-
-        print(self.parser.get_datetime(text))
 
 
         if input_intent == InputIntent.LiveCampaings:
@@ -124,12 +131,14 @@ class Chatter(object):
                 return "None of your campaigns are currently active!"
 
         elif input_intent == InputIntent.SpendAmount:
-            ix = tokens.index("[")
-            campaign = tokens[ix+1]
+            res = self.parser.get_datetime(text)
+            if res and campaign:
+                (start_date, end_date) = res
+                campaign_spend = self.z1.get_campaign_spend(campaign, start_date, end_date)
+                return "Spend on campaign {0} was {1}$".format(campaign, campaign_spend)
+
+                print(campaign)
 
         elif input_intent == InputIntent.AdPerformance:
-            ix = tokens.index("[")
-            campaign = tokens[ix+1]
+            print("c")
 
-
-Chatter().respond("Show me campaings friday")
