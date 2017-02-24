@@ -2,12 +2,13 @@ import nltk
 import logging
 from unidecode import unidecode
 import enum
-import numpy as np
 import math
 from collections import Counter
 from spell import correction
+from wit import Wit
 
 logger = logging.getLogger(__name__)
+token="K3HP47EPDBH3OULNFOP2RDQNMCQFCRXR"
 
 
 class InputIntent(enum.Enum):
@@ -25,7 +26,7 @@ d = {("Which campaigns are running currently?", "Which campaigns are live?") : I
      ("Which accounts are running currently?", "Which accounts are currently live?", "Which accounts are currently active?") : InputIntent.LiveAccounts,
      ("Stop [campaign1].") : InputIntent.StopCampaign}
 
-stop_tokens = ["?", "]", ".", "!"]
+stop_tokens = ["?", ".", "!"]
 
 
 class Response(object):
@@ -41,6 +42,10 @@ class Response(object):
 
 
 class Parser(object):
+
+
+    def __init__(self):
+        self.client = Wit(access_token=token)
 
 
     def get_cosine(self, vec1, vec2):
@@ -71,6 +76,17 @@ class Parser(object):
         print(intents_by_sim)
         return max(intents_by_sim, key=lambda x:x[1])[0]
 
+    def get_datetime(self, message):
+        resp = self.client.message(message)
+        try:
+            datetimes = resp['entities']['datetime']
+            for datetime in datetimes:
+                return datetime['value']
+        except KeyError:
+            return None
+
+
+
 
 class Chatter(object):
 
@@ -83,6 +99,7 @@ class Chatter(object):
         tokens = [correction(token) for token in tokens if token not in stop_tokens]
         input_intent = self.parser.get_input_intent(tokens)
 
+
         if input_intent == InputIntent.LiveCampaings:
             print("Live Campaings")
 
@@ -93,5 +110,3 @@ class Chatter(object):
         elif input_intent == InputIntent.AdPerformance:
             ix = tokens.index("[")
             campaign = tokens[ix+1]
-
-Chatter().respond("Whichhh campaignsss aree running currently?")
