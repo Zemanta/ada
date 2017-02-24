@@ -1,4 +1,5 @@
 import requests
+import datetime
 
 from django.conf import settings
 
@@ -14,7 +15,6 @@ class ZemantaOne(object):
     def __init__(self):
         self.session = requests.Session()
         self.session.headers['referer'] = URL_BASE
-        self.session.hooks['pre_request'] = add_csrf
         self.login()
 
     def get(self, *args, **kwargs):
@@ -43,12 +43,18 @@ class ZemantaOne(object):
         return r
 
     def get_running_campaigns(self, account_id):
+        today = datetime.date.today()
+        r = self._get_account_campaign_breakdown(account_id, start_date=today, end_date=today)
+        resp = r.json()
+        return [row['breakdown_name'] for row in resp['data'][0]['rows'] if row['status']['value'] == 1]
+
+    def _get_account_campaign_breakdown(self, account_id, start_date, end_date):
         r = self.post(URL_BASE + URL_ACCOUNT_CAMPAIGNS.format(id=account_id),
             json={
                 'params': {
                     'parents': [],
-                    'start_date': '2017-02-23',
-                    'end_date': '2017-01-24',
+                    'start_date': start_date.isoformat(),
+                    'end_date': end_date.isoformat(),
                     'show_archived': False,
                     'level': 1,
                     'limit': 60,

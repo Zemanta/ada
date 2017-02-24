@@ -2,10 +2,9 @@ import nltk
 import logging
 from unidecode import unidecode
 import enum
-import numpy as np
 import math
 from collections import Counter
-from spell import correction
+from base.spell import correction
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +73,9 @@ class Parser(object):
 
 class Chatter(object):
 
-    def __init__(self):
+    def __init__(self, z1):
         self.parser = Parser()
+        self.z1 = z1
 
 
     def respond(self, text):
@@ -84,7 +84,8 @@ class Chatter(object):
         input_intent = self.parser.get_input_intent(tokens)
 
         if input_intent == InputIntent.LiveCampaings:
-            print("Live Campaings")
+            live_campaigns = self.z1.get_running_campaigns(92)
+            return "The following campaigns are currently live: \n" + '\n'.join('- ' + x for x in live_campaigns)
 
         elif input_intent == InputIntent.SpendAmount:
             ix = tokens.index("[")
@@ -94,4 +95,4 @@ class Chatter(object):
             ix = tokens.index("[")
             campaign = tokens[ix+1]
 
-Chatter().respond("Whichhh campaignsss aree running currently?")
+# Chatter().respond("Whichhh campaignsss aree running currently?")

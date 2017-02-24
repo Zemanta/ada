@@ -5,7 +5,8 @@ import os
 ## author @Peter Norvig
 def words(text): return re.findall(r'\w+', text.lower())
 
-WORDS = Counter(words(open('big.txt').read()))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+WORDS = Counter(words(open(os.path.join(current_dir, 'big.txt')).read()))
 
 def P(word, N=sum(WORDS.values())):
     "Probability of `word`."
