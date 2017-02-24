@@ -1,11 +1,11 @@
 import nltk
-nltk.download('punkt')
 import logging
 from unidecode import unidecode
 import enum
 import numpy as np
 import math
 from collections import Counter
+from spell import correction
 
 logger = logging.getLogger(__name__)
 
@@ -16,12 +16,14 @@ class InputIntent(enum.Enum):
 	AdPerformance = 2
 	CampaignPerformance = 3
 	LiveAccounts = 4
+	StopCampaign = 5
 
 d = {("Which campaigns are running currently?", "Which campaigns are live?") : InputIntent.LiveCampaings,
 	 ("What was the spend on [campaign1] yesterday/last month/last week?", "What was [campaign1]'s yesterday spend?") : InputIntent.SpendAmount,
 	 ("Which ad has best performance in [campaign1]?", "Which is the best performing ad in [campaign1]") : InputIntent.AdPerformance,
 	 ("How is [campaign1] doing?") : InputIntent.CampaignPerformance,
-	 ("Which accounts are running currently?", "Which accounts are currently live?", "Which accounts are currently active?") : InputIntent.LiveAccounts}
+	 ("Which accounts are running currently?", "Which accounts are currently live?", "Which accounts are currently active?") : InputIntent.LiveAccounts,
+	 ("Stop [campaign1].") : InputIntent.StopCampaign}
 
 stop_tokens = ["?", "]", ".", "!"]
 
@@ -66,6 +68,7 @@ class Parser(object):
 
 	def get_input_intent(self, input_tokens):
 		intents_by_sim = [(intent, self.get_similarity_for_intent(input_tokens, questions)) for (questions, intent) in d.items()]
+		print(intents_by_sim)
 		return max(intents_by_sim, key=lambda x:x[1])[0]
 
 
@@ -77,20 +80,18 @@ class Chatter(object):
 
 	def respond(self, text):
 		tokens = self.parser.tokenize_input(text)
-		tokens = [token for token in tokens if token not in stop_tokens]
+		tokens = [correction(token) for token in tokens if token not in stop_tokens]
 		input_intent = self.parser.get_input_intent(tokens)
 
-		print(input_intent)
 		if input_intent == InputIntent.LiveCampaings:
 			print("Live Campaings")
-
-
 
 		elif input_intent == InputIntent.SpendAmount:
 			ix = tokens.index("[")
 			campaign = tokens[ix+1]
 
-
 		elif input_intent == InputIntent.AdPerformance:
 			ix = tokens.index("[")
 			campaign = tokens[ix+1]
+
+Chatter().respond("Whichhh campaignsss aree running currently?")
