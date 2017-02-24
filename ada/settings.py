@@ -124,3 +124,5 @@ STATIC_URL = '/static/'
 # CUSTOM SETTINGS
 BOT_ID = os.environ.get('BOT_ID')
 SLACK_BOT_TOKEN = os.environ.get('SLACK_BOT_TOKEN')
+Z1_USERNAME = os.environ.get('Z1_USERNAME')
+Z1_PASSWORD = os.environ.get('Z1_PASSWORD')
