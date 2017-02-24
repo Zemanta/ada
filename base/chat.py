@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 token="K3HP47EPDBH3OULNFOP2RDQNMCQFCRXR"
 
 
+CONTEXT = {}
+
+
 class InputIntent(enum.Enum):
     LiveCampaings = 0
     SpendAmount = 1
@@ -77,7 +80,8 @@ class Parser(object):
         print(intents_by_sim)
         return max(intents_by_sim, key=lambda x:x[1])[0]
 
-    def get_datetime(self, message):
+    def get_datetime(self, tokens):
+        message = ' '.join(tokens)
         resp = self.client.message(message)
         try:
             datetimes = resp['entities']['datetime']
@@ -85,7 +89,7 @@ class Parser(object):
                 datetime_from = datetime.datetime.strptime(date['value'][:-6], "%Y-%m-%dT%H:%M:%S.%f")
                 grain = date['grain']
                 datetime_to = None
-                if grain == "day":
+                if grain == "day" or grain == "minute":
                     datetime_to = datetime_from
                 elif grain == "week":
                     datetime_to = datetime_from + datetime.timedelta(weeks=1)
@@ -118,9 +122,28 @@ class Chatter(object):
 
     def respond(self, text):
         tokens = self.parser.tokenize_input(text)
-        campaign = self.parser.get_campaign(tokens)
         tokens = [correction(token) for token in tokens if token not in stop_tokens]
-        input_intent = self.parser.get_input_intent(tokens)
+        campaign = self.parser.get_campaign(tokens)
+        datetime = self.parser.get_datetime(tokens)
+
+        if CONTEXT.get('missingDatetime'):
+            res = self.parser.get_datetime(tokens)
+            if res:
+                input_intent = CONTEXT['missingDatetime']['intent']
+                campaign = CONTEXT['missingDatetime']['campaign_id']
+                del CONTEXT['missingDatetime']
+            else:
+                return "When?"
+        if CONTEXT.get('missingCampaign'):
+            campaign = self.parser.get_campaign(tokens)
+            if campaign:
+                input_intent = CONTEXT['missingCampaign']['intent']
+                datetime = CONTEXT['missingCampaign']['datetime']
+                del CONTEXT['missingCampaign']
+            else:
+                return "Which campaign?"
+        else:
+            input_intent = self.parser.get_input_intent(tokens)
 
         print("Selected intent: ", input_intent)
 
@@ -132,13 +155,15 @@ class Chatter(object):
                 return "None of your campaigns are currently active!"
 
         elif input_intent == InputIntent.SpendAmount:
-            res = self.parser.get_datetime(' '.join(tokens))
-            print("resolved datetime: ", res)
-            if not res:
-                return "Please specify the time period!"
+            if not datetime and not campaign:
+                return "WHAT?!"
+            if not datetime:
+                CONTEXT['missingDatetime'] = {'campaign_id': campaign, 'intent': input_intent}
+                return "When?"
             if not campaign:
-                return "Please specify the Campaign's ID"
-            (start_date, end_date) = res
+                CONTEXT['missingCampaign'] = {'datetime': datetime, 'intent': input_intent}
+                return "On which campaign?"
+            (start_date, end_date) = datetime
             campaign_spend = self.z1.get_campaign_spend(campaign, start_date, end_date)
             return "Spend on campaign {0} was {1}$".format(campaign, campaign_spend)
 
