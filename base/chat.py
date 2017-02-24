@@ -23,9 +23,9 @@ class InputIntent(enum.Enum):
 d = {("Which campaigns are running currently?", "Which campaigns are live?") : InputIntent.LiveCampaings,
      ("What was the spend on campaign [13218]", "What was campaign [1233]'s spend?") : InputIntent.SpendAmount,
      ("Which ad has best performance in [campaign1]?", "Which is the best performing ad in [campaign1]") : InputIntent.AdPerformance,
-     ("How is [campaign1] doing?") : InputIntent.CampaignPerformance,
+     ("How is [campaign1] doing?",) : InputIntent.CampaignPerformance,
      ("Which accounts are running currently?", "Which accounts are currently live?", "Which accounts are currently active?") : InputIntent.LiveAccounts,
-     ("Stop [campaign1].") : InputIntent.StopCampaign}
+     ("Stop [campaign1].",) : InputIntent.StopCampaign}
 
 stop_tokens = ["?", ".", "!"]
 
@@ -86,7 +86,7 @@ class Parser(object):
                 grain = date['grain']
                 datetime_to = None
                 if grain == "day":
-                    datetime_to = datetime_from + datetime.timedelta(days=1)
+                    datetime_to = datetime_from
                 elif grain == "week":
                     datetime_to = datetime_from + datetime.timedelta(weeks=1)
                 elif grain == "month":
@@ -99,13 +99,14 @@ class Parser(object):
             return None
 
     def get_campaign(self, tokens):
-        try:
-            ix = tokens.index("[")
-            return tokens[ix+1]
-        except IndexError:
-            return None
-
-
+        campaign_id = None
+        for token in tokens:
+            try:
+                campaign_id = int(token)
+                break
+            except:
+                pass
+        return campaign_id
 
 
 class Chatter(object):
@@ -131,22 +132,22 @@ class Chatter(object):
                 return "None of your campaigns are currently active!"
 
         elif input_intent == InputIntent.SpendAmount:
-            res = self.parser.get_datetime(text)
-            if res and campaign:
-                (start_date, end_date) = res
-                campaign_spend = self.z1.get_campaign_spend(campaign, start_date, end_date)
-                return "Spend on campaign {0} was {1}$".format(campaign, campaign_spend)
-
-                print(campaign)
+            res = self.parser.get_datetime(' '.join(tokens))
+            print("resolved datetime: ", res)
+            if not res:
+                return "Please specify the time period!"
+            if not campaign:
+                return "Please specify the Campaign's ID"
+            (start_date, end_date) = res
+            campaign_spend = self.z1.get_campaign_spend(campaign, start_date, end_date)
+            return "Spend on campaign {0} was {1}$".format(campaign, campaign_spend)
 
         elif input_intent == InputIntent.AdPerformance:
-            campaign_id = None
-            for token in tokens:
-                try:
-                    campaign_id = int(token)
-                    break
-                except:
-                    pass
-            if not campaign_id:
+            if not campaign:
                 return "Please specify Campaign's ID"
-            return "Campaign ID: %s" % campaign_id
+            r = self.z1.get_content_insights(campaign)
+            title = r['best_performer_rows'][0]['summary']
+            return "The best performing ad in campaign {campaign_id} is '{title}'".format(
+                campaign_id=campaign,
+                title=title
+            )
