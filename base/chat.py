@@ -6,6 +6,7 @@ import math
 from collections import Counter
 from spell import correction
 from wit import Wit
+from base.spell import correction
 
 logger = logging.getLogger(__name__)
 token="K3HP47EPDBH3OULNFOP2RDQNMCQFCRXR"
@@ -90,8 +91,9 @@ class Parser(object):
 
 class Chatter(object):
 
-    def __init__(self):
+    def __init__(self, z1):
         self.parser = Parser()
+        self.z1 = z1
 
 
     def respond(self, text):
@@ -101,7 +103,8 @@ class Chatter(object):
 
 
         if input_intent == InputIntent.LiveCampaings:
-            print("Live Campaings")
+            live_campaigns = self.z1.get_running_campaigns(92)
+            return "The following campaigns are currently live: \n" + '\n'.join('- ' + x for x in live_campaigns)
 
         elif input_intent == InputIntent.SpendAmount:
             ix = tokens.index("[")
