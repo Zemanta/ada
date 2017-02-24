@@ -39,10 +39,13 @@ class Command(BaseCommand):
         output_list = slack_rtm_output
         if output_list and len(output_list) > 0:
             for output in output_list:
-                if output and 'text' in output and (AT_BOT in output['text'] or output['channel'] == settings.BOT_ID):
+                if output and 'text' in output and (AT_BOT in output['text'] or (output['channel'][0] == "D" and output['user'] != settings.BOT_ID)):
                     # return text after the @ mention, whitespace removed
-                    return output['text'].split(AT_BOT)[1].strip().lower(), \
-                        output['channel']
+                    if AT_BOT in output['text']:
+                        return output['text'].split(AT_BOT)[1].strip().lower(), \
+                            output['channel']
+                    else:
+                        return output['text'], output['channel']
         return None, None
 
     def handle_input(self, input_text, channel):
